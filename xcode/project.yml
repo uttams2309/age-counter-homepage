@@ -1,0 +1,71 @@
+# XcodeGen spec — generates Age.xcodeproj from the source files in this folder.
+#
+#   brew install xcodegen      # one-time
+#   cd xcode && xcodegen       # (re)generate Age.xcodeproj
+#   open Age.xcodeproj         # needs full Xcode (not just Command Line Tools)
+#
+# The .xcodeproj and the generated Info.plist files are NOT committed — they are
+# regenerated from this file. Edit the spec here, not the project in Xcode.
+
+name: Age
+
+options:
+  bundleIdPrefix: com.uttams
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.0"
+    CODE_SIGN_STYLE: Automatic
+    GENERATE_INFOPLIST_FILE: NO
+    # Pick the team in Xcode → Signing & Capabilities the first time you run on a device.
+    # Simulator builds need no team.
+
+targets:
+
+  # ── iOS app ────────────────────────────────────────────────────────────────
+  Age:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+      - path: Shared
+      # AgeAttributes (the Live Activity model) lives here and must compile into
+      # BOTH the app (which starts the activity) and the widget (which renders it).
+      - path: Widget/AgeLiveActivity.swift
+    dependencies:
+      - target: AgeWidgetExtension
+        embed: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.uttams.Age
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Age
+        # Required for the lock-screen / Dynamic Island Live Activity.
+        NSSupportsLiveActivities: true
+        UILaunchScreen: {}
+        UIApplicationSupportsIndirectInputEvents: true
+
+  # ── Widget extension (home & lock-screen widgets, watch complications) ───────
+  AgeWidgetExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Widget
+      - path: Shared
+    settings:
+      base:
+        # MUST be prefixed by the app's bundle id.
+        PRODUCT_BUNDLE_IDENTIFIER: com.uttams.Age.AgeWidget
+    info:
+      path: Widget/Info.plist
+      properties:
+        CFBundleDisplayName: Age
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension

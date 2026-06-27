@@ -38,6 +38,20 @@ For an always-in-the-menu-bar alternative instead of a desktop widget, a ~50-lin
 
 I'm giving you source files rather than a prebuilt `.xcodeproj` on purpose: hand-authored `project.pbxproj` files are fragile and often won't open. Wiring three files into targets takes ~3 minutes and is far more robust.
 
+### Fastest path — generate the project with XcodeGen
+
+`xcode/project.yml` describes the whole project (app target, widget-extension target, shared-file membership, Live Activity Info.plist keys). Let a tool build a clean `.xcodeproj` from it instead of clicking through Xcode:
+
+```bash
+brew install xcodegen      # one-time
+cd xcode && xcodegen       # creates Age.xcodeproj
+open Age.xcodeproj         # needs full Xcode, not just Command Line Tools
+```
+
+Then set your DOB in `Shared/AgeConfig.swift` (⚠️ Swift months are **1-indexed** — September = `9`, unlike the Übersicht file), pick a signing team under **Signing & Capabilities**, choose a simulator or your iPhone, and press ⌘R. The generated `.xcodeproj` and `Info.plist` files are gitignored — re-run `xcodegen` after pulling changes. Edit `project.yml`, not the project inside Xcode.
+
+If you'd rather wire it by hand instead, follow the manual steps below.
+
 **Create the project**
 1. Xcode → New Project → **App**. Interface SwiftUI, name e.g. `Age`. Min deployment **iOS 17 / watchOS 10 / macOS 14** (uses `containerBackground`).
 2. Add a **Widget Extension** target: File → New → Target → Widget Extension. Tick **Include Live Activity** if you want the lock-screen ticker. Name it `AgeWidget`.
